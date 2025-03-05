@@ -28,7 +28,10 @@ const handleReset = (): void => {
 
 <template>
   <div class="config">
-    <h2 class="config__title"><i class="pi pi-cog"></i> Configuración</h2>
+    <h2 class="config__title">
+      <span class="config__title-icon"><i class="pi pi-cog"></i></span>
+      <span class="config__title-text">Configuración</span>
+    </h2>
 
     <div class="config__form">
       <div class="config__form-group">
@@ -64,6 +67,11 @@ const handleReset = (): void => {
   background-color: #f8f9fa;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s ease;
+}
+
+.config:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .config__title {
@@ -74,6 +82,63 @@ const handleReset = (): void => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  position: relative;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.config__title-icon {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #42b3e5, #2980b9);
+  border-radius: 8px;
+  color: white;
+  transition: all 0.3s ease;
+  animation: pulse 2s infinite;
+}
+
+.config__title:hover .config__title-icon {
+  transform: rotate(-15deg) scale(1.1);
+  box-shadow: 0 4px 8px rgba(41, 128, 185, 0.3);
+}
+
+.config__title-text {
+  background: linear-gradient(135deg, #34495e, #2c3e50);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.config__title-text::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #42b3e5, transparent);
+  transition: width 0.3s ease;
+}
+
+.config__title:hover .config__title-text::after {
+  width: 100%;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(41, 128, 185, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(41, 128, 185, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(41, 128, 185, 0);
+  }
 }
 
 .config__form-group {
@@ -94,6 +159,21 @@ const handleReset = (): void => {
 
 .config__input {
   flex: 1;
+  transition: all 0.3s ease;
+  border-radius: 6px;
+}
+
+.config__input:focus {
+  border-color: #42b3e5;
+  box-shadow: 0 0 0 2px rgba(66, 179, 229, 0.2);
+}
+
+.config__reset-button {
+  transition: all 0.3s ease;
+}
+
+.config__reset-button:hover {
+  transform: rotate(45deg);
 }
 
 .config__help-text {
@@ -101,14 +181,10 @@ const handleReset = (): void => {
   margin-top: 0.25rem;
   color: #6c757d;
   font-size: 0.875rem;
+  transition: opacity 0.3s ease;
 }
 
-/* Transiciones */
-.config {
-  transition: box-shadow 0.3s ease;
-}
-
-.config:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.config__input:focus + .config__help-text {
+  opacity: 0.7;
 }
 </style>

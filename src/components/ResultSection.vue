@@ -52,59 +52,114 @@ const formatXml = (text: string): string => {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;')
 
-  // Usamos un enfoque diferente para mejor colorear las etiquetas y contenido
-  let result = ''
+  // Nuevo algoritmo para procesar XML línea por línea
+  let formatted = ''
+  let depth = 0
+  let position = 0
+  let chunk = ''
   let inTag = false
-  let currentTag = ''
-  let currentContent = ''
+  let tagContent = ''
 
-  for (let i = 0; i < escaped.length; i++) {
-    const char = escaped[i]
-    const nextChar = escaped[i + 1] || ''
-
-    if (char === '&' && nextChar === 'l' && escaped[i + 2] === 't' && escaped[i + 3] === ';') {
-      // Inicio potencial de etiqueta
-      if (currentContent) {
-        result += `<span class="xml-content">${currentContent}</span>`
-        currentContent = ''
-      }
-      inTag = true
-      currentTag = '&lt;'
-      i += 3 // Saltar 'lt;'
-    } else if (
-      char === '&' &&
-      nextChar === 'g' &&
-      escaped[i + 2] === 't' &&
-      escaped[i + 3] === ';' &&
-      inTag
-    ) {
-      // Fin de etiqueta
-      currentTag += '&gt;'
-      result += `<span class="xml-tag">${currentTag}</span>`
-      currentTag = ''
+  // Función para procesar un trozo de texto
+  const processChunk = () => {
+    if (!chunk) return
+    if (inTag) {
+      // Es una etiqueta
+      formatted += `<span class="xml-tag">${chunk}</span>`
       inTag = false
-      i += 3 // Saltar 'gt;'
-    } else if (inTag) {
-      // Dentro de una etiqueta
-      currentTag += char
+    } else if (chunk.trim()) {
+      // Es contenido con texto
+      formatted += `<span class="xml-content">${chunk}</span>`
+    }
+    chunk = ''
+  }
+
+  while (position < escaped.length) {
+    // Comienza una etiqueta
+    if (escaped.substring(position, position + 4) === '&lt;') {
+      // Procesar cualquier contenido anterior
+      processChunk()
+
+      inTag = true
+      chunk = '&lt;'
+      position += 4
+
+      // Buscar el final de la etiqueta
+      let tagEnd = escaped.indexOf('&gt;', position)
+      if (tagEnd !== -1) {
+        chunk += escaped.substring(position, tagEnd + 4)
+        position = tagEnd + 4
+
+        // Detectar si es etiqueta de apertura o cierre
+        const isClosingTag = chunk.includes('&lt;/')
+        const isSelfClosingTag = chunk.includes('/&gt;')
+
+        // Ajustar la indentación
+        if (isClosingTag) {
+          depth = Math.max(0, depth - 1)
+        }
+
+        // Añadir indentación
+        const indentation = '  '.repeat(depth)
+        formatted += indentation
+
+        // Procesar la etiqueta
+        processChunk()
+        formatted += '<br>'
+
+        // Incrementar profundidad para etiquetas de apertura
+        if (!isClosingTag && !isSelfClosingTag) {
+          depth++
+        }
+      } else {
+        // No se encontró el cierre, tratar como texto normal
+        chunk += escaped.substring(position)
+        position = escaped.length
+        processChunk()
+      }
     } else {
-      // Contenido normal entre etiquetas
-      currentContent += char
+      // Contenido normal
+      const nextTagStart = escaped.indexOf('&lt;', position)
+      if (nextTagStart !== -1) {
+        chunk += escaped.substring(position, nextTagStart)
+        position = nextTagStart
+
+        // Si hay contenido significativo, indentarlo
+        if (chunk.trim()) {
+          const indentation = '  '.repeat(depth)
+          formatted += indentation
+          processChunk()
+          formatted += '<br>'
+        } else {
+          chunk = ''
+        }
+      } else {
+        // No hay más etiquetas
+        chunk += escaped.substring(position)
+        position = escaped.length
+
+        // Si hay contenido significativo, indentarlo
+        if (chunk.trim()) {
+          const indentation = '  '.repeat(depth)
+          formatted += indentation
+          processChunk()
+        } else {
+          chunk = ''
+        }
+      }
     }
   }
 
-  // Agregar cualquier contenido restante
-  if (currentContent) {
-    result += `<span class="xml-content">${currentContent}</span>`
-  }
-
-  return result
+  return formatted
 }
 </script>
 
 <template>
   <div class="results">
-    <h2 class="results__title"><i class="pi pi-file-code"></i> Contenido Decodificado</h2>
+    <h2 class="results__title">
+      <span class="results__title-icon"><i class="pi pi-code"></i></span>
+      <span class="results__title-text">Contenido Decodificado</span>
+    </h2>
 
     <div class="results__container">
       <div v-if="isLoading" class="results__loading">
@@ -193,6 +248,11 @@ const formatXml = (text: string): string => {
   padding: 1.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   height: 100%;
+  transition: box-shadow 0.3s ease;
+}
+
+.results:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .results__title {
@@ -204,6 +264,50 @@ const formatXml = (text: string): string => {
   align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
+  position: relative;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.results__title-icon {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #9575cd, #673ab7);
+  border-radius: 8px;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.results__title:hover .results__title-icon {
+  transform: rotate(-15deg) scale(1.1);
+  box-shadow: 0 4px 8px rgba(103, 58, 183, 0.3);
+}
+
+.results__title-text {
+  background: linear-gradient(135deg, #34495e, #2c3e50);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.results__title-text::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #9575cd, transparent);
+  transition: width 0.3s ease;
+}
+
+.results__title:hover .results__title-text::after {
+  width: 100%;
 }
 
 .results__container {
@@ -215,6 +319,7 @@ const formatXml = (text: string): string => {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 300px);
+  transition: all 0.3s ease;
 }
 
 .results__loading {
@@ -226,15 +331,27 @@ const formatXml = (text: string): string => {
   min-height: 300px;
   gap: 1rem;
   color: #6c757d;
+  animation: fadeIn 0.5s ease-out;
 }
 
 .results__loading-icon {
   font-size: 2rem;
-  color: #2196f3;
+  color: #9575cd;
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .results__loading-text {
   font-size: 1.2rem;
+  background: linear-gradient(135deg, #9575cd, #673ab7);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .results__empty {
@@ -248,12 +365,36 @@ const formatXml = (text: string): string => {
   border: 1px dashed #dee2e6;
   border-radius: 8px;
   color: #6c757d;
+  transition: all 0.3s ease;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.results__empty:hover {
+  border-color: #9575cd;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .results__empty-icon {
   font-size: 3rem;
   margin-bottom: 1rem;
-  color: #90a4ae;
+  color: #9575cd;
+  transition: all 0.3s ease;
+}
+
+.results__empty:hover .results__empty-icon {
+  transform: scale(1.1);
 }
 
 .results__empty-text {
@@ -269,6 +410,7 @@ const formatXml = (text: string): string => {
   gap: 1.5rem;
   overflow-y: auto;
   padding-right: 0.5rem;
+  animation: fadeIn 0.5s ease-out;
 }
 
 .results__card {
@@ -325,6 +467,7 @@ const formatXml = (text: string): string => {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  transition: all 0.3s ease;
 }
 
 .results__tag--base64 {
@@ -332,9 +475,19 @@ const formatXml = (text: string): string => {
   color: #01579b;
 }
 
+.results__tag--base64:hover {
+  background-color: #b3e5fc;
+  transform: translateY(-1px);
+}
+
 .results__tag--not-base64 {
   background-color: #ffebee;
   color: #b71c1c;
+}
+
+.results__tag--not-base64:hover {
+  background-color: #ffcdd2;
+  transform: translateY(-1px);
 }
 
 .results__section-title {
@@ -345,6 +498,20 @@ const formatXml = (text: string): string => {
   align-items: center;
   gap: 0.5rem;
   color: #455a64;
+  transition: all 0.3s ease;
+}
+
+.results__section-title:hover {
+  color: #263238;
+}
+
+.results__section-title i {
+  color: #9575cd;
+  transition: all 0.3s ease;
+}
+
+.results__section-title:hover i {
+  transform: rotate(-15deg);
 }
 
 .results__code-block {
@@ -358,14 +525,25 @@ const formatXml = (text: string): string => {
   display: flex;
   flex-direction: column;
   position: relative;
+  transition: all 0.3s ease;
 }
 
 .results__code-block--original {
   border-left: 3px solid #673ab7;
 }
 
+.results__code-block--original:hover {
+  border-left-width: 5px;
+  box-shadow: inset 0 0 10px rgba(103, 58, 183, 0.1);
+}
+
 .results__code-block--decoded {
   border-left: 3px solid #2196f3;
+}
+
+.results__code-block--decoded:hover {
+  border-left-width: 5px;
+  box-shadow: inset 0 0 10px rgba(33, 150, 243, 0.1);
 }
 
 .results__pre {
@@ -403,11 +581,39 @@ const formatXml = (text: string): string => {
 .results__button {
   flex: 1;
   width: 100%;
-  transition: transform 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .results__button:not(:disabled):hover {
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.results__button.p-button-primary {
+  background: linear-gradient(135deg, #9575cd, #673ab7);
+  border: none;
+}
+
+.results__button.p-button-primary:enabled:hover {
+  background: linear-gradient(135deg, #8465bb, #5e35b1);
+}
+
+.results__button.p-button-secondary {
+  background: linear-gradient(135deg, #64b5f6, #2196f3);
+  border: none;
+}
+
+.results__button.p-button-secondary:enabled:hover {
+  background: linear-gradient(135deg, #42a5f5, #1e88e5);
+}
+
+.results__button.p-button-danger {
+  background: linear-gradient(135deg, #f44336, #c62828);
+  border: none;
+}
+
+.results__button.p-button-danger:enabled:hover {
+  background: linear-gradient(135deg, #e53935, #b71c1c);
 }
 
 :deep(.xml-tag) {

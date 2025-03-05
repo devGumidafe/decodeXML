@@ -75,7 +75,10 @@ const removeFile = (): void => {
 
 <template>
   <div class="file-upload">
-    <h2 class="file-upload__title"><i class="pi pi-upload"></i> Cargar archivo XML</h2>
+    <h2 class="file-upload__title">
+      <span class="file-upload__title-icon"><i class="pi pi-upload"></i></span>
+      <span class="file-upload__title-text">Cargar archivo XML</span>
+    </h2>
 
     <div
       :class="dropAreaClass"
@@ -84,24 +87,28 @@ const removeFile = (): void => {
       @dragleave="handleDragLeave"
       @drop="onFileDrop"
     >
-      <i class="pi pi-cloud-upload file-upload__icon"></i>
-      <p class="file-upload__text">Arrastra y suelta tu archivo XML aquí</p>
-      <p class="file-upload__text">o</p>
+      <template v-if="!selectedFile">
+        <i class="pi pi-cloud-upload file-upload__icon"></i>
+        <p class="file-upload__text">Arrastra y suelta tu archivo XML aquí</p>
+        <p class="file-upload__text">o</p>
 
-      <label class="file-upload__label">
-        <i class="pi pi-folder-open"></i> Seleccionar archivo
-        <input
-          type="file"
-          accept=".xml"
-          @change="onFileSelect"
-          aria-label="Seleccionar archivo XML"
-          class="file-upload__input"
-        />
-      </label>
+        <label class="file-upload__label">
+          <i class="pi pi-folder-open"></i> Seleccionar archivo
+          <input
+            type="file"
+            accept=".xml"
+            @change="onFileSelect"
+            aria-label="Seleccionar archivo XML"
+            class="file-upload__input"
+          />
+        </label>
+      </template>
 
-      <div v-if="selectedFileName" class="file-upload__selected-file">
-        <i class="pi pi-file"></i>
-        <span class="file-upload__filename">{{ selectedFileName }}</span>
+      <div v-else class="file-upload__selected-file">
+        <div class="file-upload__file-info">
+          <i class="pi pi-file file-upload__file-icon"></i>
+          <span class="file-upload__filename">{{ selectedFileName }}</span>
+        </div>
         <button
           class="file-upload__remove-btn"
           @click.stop="removeFile"
@@ -143,6 +150,63 @@ const removeFile = (): void => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  position: relative;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.file-upload__title-icon {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  border-radius: 8px;
+  color: white;
+  transition: all 0.3s ease;
+  animation: pulse 2s infinite;
+}
+
+.file-upload__title:hover .file-upload__title-icon {
+  transform: rotate(-15deg) scale(1.1);
+  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+}
+
+.file-upload__title-text {
+  background: linear-gradient(135deg, #34495e, #2c3e50);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.file-upload__title-text::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #3498db, transparent);
+  transition: width 0.3s ease;
+}
+
+.file-upload__title:hover .file-upload__title-text::after {
+  width: 100%;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(52, 152, 219, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(52, 152, 219, 0);
+  }
 }
 
 .file-upload__drop-area {
@@ -153,10 +217,15 @@ const removeFile = (): void => {
   cursor: pointer;
   transition: all 0.3s ease;
   background-color: #f8f9fa;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  min-height: 250px;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
 }
 
 .file-upload__drop-area--dragging {
@@ -167,8 +236,25 @@ const removeFile = (): void => {
 
 .file-upload__icon {
   font-size: 2.5rem;
-  color: #6c757d;
+  color: #3498db;
   margin-bottom: 1rem;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-15px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
 }
 
 .file-upload__text {
@@ -179,7 +265,7 @@ const removeFile = (): void => {
 .file-upload__label {
   display: inline-block;
   padding: 0.5rem 1rem;
-  background-color: #2196f3;
+  background-color: #3498db;
   color: white;
   border-radius: 4px;
   cursor: pointer;
@@ -187,11 +273,13 @@ const removeFile = (): void => {
   transition:
     background-color 0.2s ease,
     transform 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .file-upload__label:hover {
-  background-color: #0b7dda;
+  background-color: #2980b9;
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .file-upload__label:active {
@@ -203,57 +291,95 @@ const removeFile = (): void => {
 }
 
 .file-upload__selected-file {
-  margin-top: 1rem;
-  padding: 0.75rem 1rem;
-  background-color: #e9ecef;
-  border-radius: 4px;
+  width: 90%;
+  height: 70%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  color: #495057;
-  width: 100%;
-  max-width: 300px;
-  word-break: break-all;
+  padding: 1.5rem;
+  background-color: #e3f2fd;
+  border-radius: 8px;
+  border-left: 4px solid #2196f3;
   position: relative;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15);
+  transition: all 0.3s ease;
+  animation: fadeIn 0.4s ease-out;
+  overflow: hidden; /* Contener desbordamientos */
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.file-upload__selected-file:hover {
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.25);
+  transform: translateY(-2px);
+}
+
+.file-upload__file-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.5rem;
+}
+
+.file-upload__file-icon {
+  font-size: 2.5rem;
+  color: #2196f3;
+  animation: pulse 2s infinite;
 }
 
 .file-upload__filename {
-  max-width: calc(100% - 50px);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #455a64;
+  text-align: center;
+  max-width: 100%;
+  padding: 0 0.5rem;
+  white-space: normal; /* Permitir varias líneas */
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
 }
 
 .file-upload__remove-btn {
   position: absolute;
-  right: 5px;
-  top: 50%;
-  transform: translateY(-50%);
-  background-color: #e0e0e0;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
   border: none;
   border-radius: 50%;
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: #455a64;
   transition: all 0.2s ease;
-  padding: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .file-upload__remove-btn:hover {
   background-color: #f44336;
   color: white;
-  transform: translateY(-50%) scale(1.1);
+  transform: scale(1.1);
+  box-shadow: 0 2px 5px rgba(244, 67, 54, 0.3);
 }
 
 .file-upload__error {
   margin-top: 1rem;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem;
   background-color: #ffebee;
   color: #b71c1c;
   border-radius: 4px;
@@ -262,16 +388,43 @@ const removeFile = (): void => {
   gap: 0.5rem;
   font-size: 0.9rem;
   width: 100%;
-  max-width: 300px;
+  max-width: 350px;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-5px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(5px);
+  }
 }
 
 .file-upload__button {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  border: none;
+  border-radius: 4px;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.3s ease;
   width: 100%;
-  margin-top: 0.5rem;
-  transition: transform 0.2s ease;
+  height: 42px; /* Altura estándar para igualar con PasteSection */
 }
 
-.file-upload__button:not(:disabled):hover {
+.file-upload__button:enabled:hover {
+  background: linear-gradient(135deg, #2980b9, #1a5276);
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 </style>

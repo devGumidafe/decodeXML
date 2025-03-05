@@ -36,7 +36,10 @@ const clearContent = (): void => {
 
 <template>
   <div class="paste">
-    <h2 class="paste__title"><i class="pi pi-code"></i> Pegar contenido XML</h2>
+    <h2 class="paste__title">
+      <span class="paste__title-icon"><i class="pi pi-code"></i></span>
+      <span class="paste__title-text">Pegar contenido XML</span>
+    </h2>
 
     <div class="paste__container">
       <div class="paste__textarea-wrapper">
@@ -99,24 +102,77 @@ const clearContent = (): void => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  position: relative;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.paste__title-icon {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+  border-radius: 8px;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.paste__title:hover .paste__title-icon {
+  transform: rotate(-15deg) scale(1.1);
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+}
+
+.paste__title-text {
+  background: linear-gradient(135deg, #34495e, #2c3e50);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.paste__title-text::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #4caf50, transparent);
+  transition: width 0.3s ease;
+}
+
+.paste__title:hover .paste__title-text::after {
+  width: 100%;
 }
 
 .paste__container {
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
+  height: 100%;
 }
 
 .paste__textarea-wrapper {
   padding: 0;
   border-radius: 8px;
   background-color: #f8f9fa;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   transition: all 0.3s ease;
   height: 100%;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.paste__textarea-wrapper:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .paste__textarea-container {
@@ -129,30 +185,48 @@ const clearContent = (): void => {
   width: 100%;
   border: 1px solid #dce7f1;
   border-radius: 8px;
-  transition:
-    border-color 0.3s ease,
-    box-shadow 0.3s ease;
+  transition: all 0.3s ease;
   resize: none;
-  min-height: 265px;
+  min-height: 250px;
+  height: 100%;
   font-family: 'Courier New', monospace;
   padding: 1.5rem;
   padding-right: 40px;
+  padding-bottom: 1rem;
   background-color: #f8f9fa;
-  opacity: 0.9;
-  cursor: default;
+  background-image: linear-gradient(rgba(76, 175, 80, 0.03) 1px, transparent 1px);
+  background-size: 100% 2em;
+  overflow-y: auto;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  animation: fadeIn 0.5s ease-out;
+  outline: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .paste__textarea:focus {
-  border-color: #2196f3;
-  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
-  background-color: #e3f2fd;
+  border-color: #4caf50;
+  box-shadow:
+    0 0 0 2px rgba(76, 175, 80, 0.2),
+    inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  background-color: #f1f8e9;
+  outline: none; /* Quitar el borde al enfocar */
 }
 
 .paste__clear-btn {
   position: absolute;
   top: 10px;
   right: 10px;
-  background-color: #e0e0e0;
+  background-color: rgba(255, 255, 255, 0.8);
   border: none;
   border-radius: 50%;
   width: 24px;
@@ -165,12 +239,14 @@ const clearContent = (): void => {
   transition: all 0.2s ease;
   z-index: 2;
   padding: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .paste__clear-btn:hover {
   background-color: #f44336;
   color: white;
   transform: scale(1.1);
+  box-shadow: 0 2px 5px rgba(244, 67, 54, 0.3);
 }
 
 .paste__actions {
@@ -181,23 +257,32 @@ const clearContent = (): void => {
 
 .paste__button {
   flex: 1;
-  transition: transform 0.2s ease;
+  transition: all 0.3s ease;
   width: 100%;
+  height: 42px;
+}
+
+.paste__button.p-button-primary {
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+  border: none;
+}
+
+.paste__button.p-button-primary:enabled:hover {
+  background: linear-gradient(135deg, #43a047, #1b5e20);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
 }
 
 .paste__button--clear {
-  background-color: #f44336;
+  background: linear-gradient(135deg, #f44336, #c62828);
   color: white;
-  border-color: #f44336;
+  border: none;
 }
 
-.paste__button--clear:hover:not(:disabled) {
-  background-color: #d32f2f;
-  border-color: #d32f2f;
-}
-
-.paste__button:not(:disabled):hover {
+.paste__button--clear:enabled:hover {
+  background: linear-gradient(135deg, #e53935, #b71c1c);
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
 }
 
 .paste__button:not(:disabled):active {
