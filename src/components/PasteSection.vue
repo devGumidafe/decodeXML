@@ -92,6 +92,7 @@ const clearContent = (): void => {
 .paste {
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 .paste__title {
@@ -151,8 +152,8 @@ const clearContent = (): void => {
 .paste__container {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
   height: 100%;
+  flex: 1;
 }
 
 .paste__textarea-wrapper {
@@ -169,6 +170,7 @@ const clearContent = (): void => {
   overflow: hidden;
   position: relative;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  min-height: 250px;
 }
 
 .paste__textarea-wrapper:hover {
@@ -179,11 +181,13 @@ const clearContent = (): void => {
   position: relative;
   width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .paste__textarea {
   width: 100%;
-  border: 1px solid #dce7f1;
+  border: none;
   border-radius: 8px;
   transition: all 0.3s ease;
   resize: none;
@@ -192,14 +196,17 @@ const clearContent = (): void => {
   font-family: 'Courier New', monospace;
   padding: 1.5rem;
   padding-right: 40px;
-  padding-bottom: 1rem;
+  padding-bottom: 0;
   background-color: #f8f9fa;
   background-image: linear-gradient(rgba(76, 175, 80, 0.03) 1px, transparent 1px);
   background-size: 100% 2em;
+  background-position: 0 0;
+  background-attachment: local;
   overflow-y: auto;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
   animation: fadeIn 0.5s ease-out;
   outline: none;
+  display: block;
 }
 
 @keyframes fadeIn {
@@ -219,7 +226,7 @@ const clearContent = (): void => {
     0 0 0 2px rgba(76, 175, 80, 0.2),
     inset 0 1px 3px rgba(0, 0, 0, 0.05);
   background-color: #f1f8e9;
-  outline: none; /* Quitar el borde al enfocar */
+  outline: none;
 }
 
 .paste__clear-btn {
@@ -257,36 +264,73 @@ const clearContent = (): void => {
 
 .paste__button {
   flex: 1;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   width: 100%;
   height: 42px;
+  position: relative;
+  overflow: hidden;
 }
 
 .paste__button.p-button-primary {
   background: linear-gradient(135deg, #4caf50, #2e7d32);
   border: none;
+  box-shadow: 0 1px 3px rgba(76, 175, 80, 0.2);
 }
 
 .paste__button.p-button-primary:enabled:hover {
   background: linear-gradient(135deg, #43a047, #1b5e20);
-  transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+  transform: none;
+}
+
+.paste__button.p-button-primary:enabled::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.paste__button.p-button-primary:enabled:hover::after {
+  opacity: 1;
 }
 
 .paste__button--clear {
   background: linear-gradient(135deg, #f44336, #c62828);
   color: white;
   border: none;
+  box-shadow: 0 1px 3px rgba(244, 67, 54, 0.2);
 }
 
 .paste__button--clear:enabled:hover {
   background: linear-gradient(135deg, #e53935, #b71c1c);
-  transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+  transform: none;
+}
+
+.paste__button--clear:enabled::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.paste__button--clear:enabled:hover::after {
+  opacity: 1;
 }
 
 .paste__button:not(:disabled):active {
-  transform: translateY(0);
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 @media (max-width: 576px) {

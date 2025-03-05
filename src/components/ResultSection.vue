@@ -581,39 +581,69 @@ const formatXml = (text: string): string => {
 .results__button {
   flex: 1;
   width: 100%;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+  height: 42px;
 }
 
 .results__button:not(:disabled):hover {
-  transform: translateY(-2px);
+  transform: none;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.results__button:not(:disabled):active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.results__button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.results__button:not(:disabled):hover::after {
+  opacity: 1;
 }
 
 .results__button.p-button-primary {
   background: linear-gradient(135deg, #9575cd, #673ab7);
   border: none;
+  box-shadow: 0 1px 3px rgba(103, 58, 183, 0.2);
 }
 
 .results__button.p-button-primary:enabled:hover {
   background: linear-gradient(135deg, #8465bb, #5e35b1);
+  box-shadow: 0 4px 8px rgba(103, 58, 183, 0.3);
 }
 
 .results__button.p-button-secondary {
   background: linear-gradient(135deg, #64b5f6, #2196f3);
   border: none;
+  box-shadow: 0 1px 3px rgba(33, 150, 243, 0.2);
 }
 
 .results__button.p-button-secondary:enabled:hover {
   background: linear-gradient(135deg, #42a5f5, #1e88e5);
+  box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
 }
 
 .results__button.p-button-danger {
   background: linear-gradient(135deg, #f44336, #c62828);
   border: none;
+  box-shadow: 0 1px 3px rgba(244, 67, 54, 0.2);
 }
 
 .results__button.p-button-danger:enabled:hover {
   background: linear-gradient(135deg, #e53935, #b71c1c);
+  box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
 }
 
 :deep(.xml-tag) {
