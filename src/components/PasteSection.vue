@@ -36,32 +36,30 @@ const clearContent = (): void => {
 
 <template>
   <div class="paste">
-    <Divider class="paste__divider">
-      <span class="paste__divider-text">o</span>
-    </Divider>
-
     <h2 class="paste__title"><i class="pi pi-code"></i> Pegar contenido XML</h2>
 
     <div class="paste__container">
-      <div class="paste__textarea-container">
-        <Textarea
-          :value="content"
-          @input="updateContent"
-          rows="10"
-          placeholder="Pega aquí el contenido XML"
-          aria-label="Contenido XML"
-          class="paste__textarea"
-        />
-        <button
-          v-if="content"
-          class="paste__clear-btn"
-          @click="clearContent"
-          type="button"
-          aria-label="Limpiar contenido"
-          v-tooltip="'Borrar todo el contenido'"
-        >
-          <i class="pi pi-times"></i>
-        </button>
+      <div class="paste__textarea-wrapper">
+        <div class="paste__textarea-container">
+          <Textarea
+            :value="content"
+            @input="updateContent"
+            rows="10"
+            placeholder="Pega aquí el contenido XML"
+            aria-label="Contenido XML"
+            class="paste__textarea"
+          />
+          <button
+            v-if="content"
+            class="paste__clear-btn"
+            @click="clearContent"
+            type="button"
+            aria-label="Limpiar contenido"
+            v-tooltip="'Borrar todo el contenido'"
+          >
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
       </div>
 
       <div class="paste__actions">
@@ -93,17 +91,6 @@ const clearContent = (): void => {
   flex-direction: column;
 }
 
-.paste__divider {
-  margin: 1.5rem 0;
-}
-
-.paste__divider-text {
-  background-color: white;
-  padding: 0 1rem;
-  color: #6c757d;
-  font-weight: 500;
-}
-
 .paste__title {
   font-size: 1.4rem;
   margin-top: 0;
@@ -117,30 +104,48 @@ const clearContent = (): void => {
 .paste__container {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.1rem;
+}
+
+.paste__textarea-wrapper {
+  padding: 0;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.3s ease;
+  height: 100%;
 }
 
 .paste__textarea-container {
   position: relative;
   width: 100%;
+  height: 100%;
 }
 
 .paste__textarea {
   width: 100%;
   border: 1px solid #dce7f1;
-  border-radius: 4px;
+  border-radius: 8px;
   transition:
     border-color 0.3s ease,
     box-shadow 0.3s ease;
-  resize: vertical;
-  min-height: 150px;
+  resize: none;
+  min-height: 265px;
   font-family: 'Courier New', monospace;
-  padding-right: 40px; /* Espacio para el botón de limpiar */
+  padding: 1.5rem;
+  padding-right: 40px;
+  background-color: #f8f9fa;
+  opacity: 0.9;
+  cursor: default;
 }
 
 .paste__textarea:focus {
   border-color: #2196f3;
   box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+  background-color: #e3f2fd;
 }
 
 .paste__clear-btn {
