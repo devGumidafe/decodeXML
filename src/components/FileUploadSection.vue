@@ -168,11 +168,6 @@ const removeFile = (): void => {
   animation: pulse 2s infinite;
 }
 
-.file-upload__title:hover .file-upload__title-icon {
-  transform: rotate(-15deg) scale(1.1);
-  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
-}
-
 .file-upload__title-text {
   background: linear-gradient(135deg, #34495e, #2c3e50);
   -webkit-background-clip: text;

@@ -120,11 +120,6 @@ const clearContent = (): void => {
   transition: all 0.3s ease;
 }
 
-.paste__title:hover .paste__title-icon {
-  transform: rotate(-15deg) scale(1.1);
-  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
-}
-
 .paste__title-text {
   background: linear-gradient(135deg, #34495e, #2c3e50);
   -webkit-background-clip: text;

@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { defineProps, computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { DecodedResult } from '@/types/xml-decoder'
+import { useXmlFormatter } from '@/composables/useXmlFormatter'
+import { useXmlExtractor } from '@/composables/useXmlExtractor'
 
 interface Props {
   results: DecodedResult[]
@@ -9,13 +11,30 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
 const emit = defineEmits<{
   export: []
   'copy-all': []
   clear: []
 }>()
 
+const showCopyMessage = ref(false)
+const copyMessageText = ref('')
+const { formatXml } = useXmlFormatter()
+const { extractWebFormData, copyToClipboard, copyStatus, copyMessage } = useXmlExtractor()
+
 const hasContent = computed<boolean>(() => props.results.length > 0)
+
+watch(copyStatus, (newStatus) => {
+  if (newStatus !== 'idle') {
+    showCopyMessage.value = true
+    copyMessageText.value = copyMessage.value
+
+    setTimeout(() => {
+      showCopyMessage.value = false
+    }, 3000)
+  }
+})
 
 /**
  * Maneja la exportación de los resultados
@@ -25,10 +44,16 @@ const handleExport = (): void => {
 }
 
 /**
- * Maneja la copia de todos los resultados
+ * Maneja la copia del contenido webFormData
  */
-const handleCopyAll = (): void => {
-  emit('copy-all')
+const handleCopyWebFormData = async (): Promise<void> => {
+  const contentToCopy = extractWebFormData(props.results)
+
+  const success = await copyToClipboard(contentToCopy)
+
+  if (!success && !contentToCopy) {
+    emit('copy-all')
+  }
 }
 
 /**
@@ -36,121 +61,6 @@ const handleCopyAll = (): void => {
  */
 const handleClear = (): void => {
   emit('clear')
-}
-
-/**
- * Formatea el XML con colores para etiquetas y contenido
- */
-const formatXml = (text: string): string => {
-  if (!text) return ''
-
-  // Escapar primero para evitar XSS
-  const escaped = text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
-
-  // Nuevo algoritmo para procesar XML línea por línea
-  let formatted = ''
-  let depth = 0
-  let position = 0
-  let chunk = ''
-  let inTag = false
-  let tagContent = ''
-
-  // Función para procesar un trozo de texto
-  const processChunk = () => {
-    if (!chunk) return
-    if (inTag) {
-      // Es una etiqueta
-      formatted += `<span class="xml-tag">${chunk}</span>`
-      inTag = false
-    } else if (chunk.trim()) {
-      // Es contenido con texto
-      formatted += `<span class="xml-content">${chunk}</span>`
-    }
-    chunk = ''
-  }
-
-  while (position < escaped.length) {
-    // Comienza una etiqueta
-    if (escaped.substring(position, position + 4) === '&lt;') {
-      // Procesar cualquier contenido anterior
-      processChunk()
-
-      inTag = true
-      chunk = '&lt;'
-      position += 4
-
-      // Buscar el final de la etiqueta
-      let tagEnd = escaped.indexOf('&gt;', position)
-      if (tagEnd !== -1) {
-        chunk += escaped.substring(position, tagEnd + 4)
-        position = tagEnd + 4
-
-        // Detectar si es etiqueta de apertura o cierre
-        const isClosingTag = chunk.includes('&lt;/')
-        const isSelfClosingTag = chunk.includes('/&gt;')
-
-        // Ajustar la indentación
-        if (isClosingTag) {
-          depth = Math.max(0, depth - 1)
-        }
-
-        // Añadir indentación
-        const indentation = '  '.repeat(depth)
-        formatted += indentation
-
-        // Procesar la etiqueta
-        processChunk()
-        formatted += '<br>'
-
-        // Incrementar profundidad para etiquetas de apertura
-        if (!isClosingTag && !isSelfClosingTag) {
-          depth++
-        }
-      } else {
-        // No se encontró el cierre, tratar como texto normal
-        chunk += escaped.substring(position)
-        position = escaped.length
-        processChunk()
-      }
-    } else {
-      // Contenido normal
-      const nextTagStart = escaped.indexOf('&lt;', position)
-      if (nextTagStart !== -1) {
-        chunk += escaped.substring(position, nextTagStart)
-        position = nextTagStart
-
-        // Si hay contenido significativo, indentarlo
-        if (chunk.trim()) {
-          const indentation = '  '.repeat(depth)
-          formatted += indentation
-          processChunk()
-          formatted += '<br>'
-        } else {
-          chunk = ''
-        }
-      } else {
-        // No hay más etiquetas
-        chunk += escaped.substring(position)
-        position = escaped.length
-
-        // Si hay contenido significativo, indentarlo
-        if (chunk.trim()) {
-          const indentation = '  '.repeat(depth)
-          formatted += indentation
-          processChunk()
-        } else {
-          chunk = ''
-        }
-      }
-    }
-  }
-
-  return formatted
 }
 </script>
 
@@ -160,6 +70,26 @@ const formatXml = (text: string): string => {
       <span class="results__title-icon"><i class="pi pi-code"></i></span>
       <span class="results__title-text">Contenido Decodificado</span>
     </h2>
+
+    <transition name="fade">
+      <div
+        v-if="showCopyMessage"
+        class="results__copy-message"
+        :class="{
+          'results__copy-message--success': copyStatus === 'success',
+          'results__copy-message--error': copyStatus === 'error',
+        }"
+      >
+        <i
+          class="pi"
+          :class="{
+            'pi-check-circle': copyStatus === 'success',
+            'pi-times-circle': copyStatus === 'error',
+          }"
+        ></i>
+        <span>{{ copyMessageText }}</span>
+      </div>
+    </transition>
 
     <div class="results__container">
       <div v-if="isLoading" class="results__loading">
@@ -219,12 +149,12 @@ const formatXml = (text: string): string => {
       />
 
       <Button
-        label="Copiar todo"
+        label="Copiar"
         icon="pi pi-copy"
         class="p-button-secondary results__button"
         :disabled="!hasContent"
-        @click="handleCopyAll"
-        v-tooltip="'Copiar todos los resultados al portapapeles'"
+        @click="handleCopyWebFormData"
+        v-tooltip="'Copiar el contenido XML'"
       />
 
       <Button
@@ -249,10 +179,66 @@ const formatXml = (text: string): string => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   height: 100%;
   transition: box-shadow 0.3s ease;
+  position: relative;
 }
 
 .results:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.results__copy-message {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  animation: slideIn 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border-left-width: 5px;
+  max-width: 90%;
+}
+
+.results__copy-message i {
+  font-size: 1.2rem;
+}
+
+.results__copy-message--success {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-left: 5px solid #4caf50;
+}
+
+.results__copy-message--error {
+  background-color: #ffebee;
+  color: #c62828;
+  border-left: 5px solid #f44336;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 .results__title {
@@ -279,11 +265,6 @@ const formatXml = (text: string): string => {
   border-radius: 8px;
   color: white;
   transition: all 0.3s ease;
-}
-
-.results__title:hover .results__title-icon {
-  transform: rotate(-15deg) scale(1.1);
-  box-shadow: 0 4px 8px rgba(103, 58, 183, 0.3);
 }
 
 .results__title-text {

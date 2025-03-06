@@ -100,11 +100,6 @@ const handleReset = (): void => {
   animation: pulse 2s infinite;
 }
 
-.config__title:hover .config__title-icon {
-  transform: rotate(-15deg) scale(1.1);
-  box-shadow: 0 4px 8px rgba(41, 128, 185, 0.3);
-}
-
 .config__title-text {
   background: linear-gradient(135deg, #34495e, #2c3e50);
   -webkit-background-clip: text;
