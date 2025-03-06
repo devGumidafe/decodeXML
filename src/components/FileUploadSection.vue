@@ -64,9 +64,6 @@ const processFile = (): void => {
   }
 }
 
-/**
- * Elimina el archivo seleccionado
- */
 const removeFile = (): void => {
   clearSelectedFile()
   emit('clear-file')
@@ -300,7 +297,7 @@ const removeFile = (): void => {
   box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15);
   transition: all 0.3s ease;
   animation: fadeIn 0.4s ease-out;
-  overflow: hidden; /* Contener desbordamientos */
+  overflow: hidden;
 }
 
 @keyframes fadeIn {
@@ -341,7 +338,7 @@ const removeFile = (): void => {
   text-align: center;
   max-width: 100%;
   padding: 0 0.5rem;
-  white-space: normal; /* Permitir varias líneas */
+  white-space: normal;
   word-break: break-word;
   overflow-wrap: break-word;
   line-height: 1.4;
@@ -414,7 +411,7 @@ const removeFile = (): void => {
   padding: 0.75rem 1.5rem;
   transition: all 0.3s ease;
   width: 100%;
-  height: 42px; /* Altura estándar para igualar con PasteSection */
+  height: 42px;
 }
 
 .file-upload__button:enabled:hover {

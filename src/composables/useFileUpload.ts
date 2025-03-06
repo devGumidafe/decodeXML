@@ -9,7 +9,7 @@ export function useFileUpload() {
   const isDragging = ref<boolean>(false)
   const state = reactive<FileUploadState>({
     status: 'idle',
-    errorMessage: ''
+    errorMessage: '',
   })
 
   // Constantes para mejorar la mantenibilidad
@@ -21,8 +21,10 @@ export function useFileUpload() {
    */
   const isValidFile = (file: File): boolean => {
     const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase()
-    return ALLOWED_MIME_TYPES.includes(file.type) ||
-      ALLOWED_EXTENSIONS.some(ext => fileExtension === ext)
+    return (
+      ALLOWED_MIME_TYPES.includes(file.type) ||
+      ALLOWED_EXTENSIONS.some((ext) => fileExtension === ext)
+    )
   }
 
   /**
@@ -121,6 +123,6 @@ export function useFileUpload() {
     handleDragLeave,
     handleDrop,
     clearSelectedFile,
-    isValidFile
+    isValidFile,
   }
 }

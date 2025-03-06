@@ -71,7 +71,6 @@ defineProps<Props>()
   background: linear-gradient(to right, rgba(76, 175, 80, 0.1), transparent 30%);
 }
 
-/* Mejora de los mensajes primeng */
 .message-display :deep(.p-message-wrapper) {
   padding: 1rem;
 }
@@ -95,7 +94,6 @@ defineProps<Props>()
   transform: rotate(90deg);
 }
 
-/* Animaciones */
 .message-fade-enter-active {
   transition:
     opacity 0.4s ease,

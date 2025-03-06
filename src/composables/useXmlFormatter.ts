@@ -131,6 +131,6 @@ export const useXmlFormatter = () => {
 
   return {
     formatXml,
-    escapeXml
+    escapeXml,
   }
 }

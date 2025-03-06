@@ -103,6 +103,6 @@ export const useXmlExtractor = () => {
     extractWebFormData,
     copyToClipboard,
     copyStatus,
-    copyMessage
+    copyMessage,
   }
 }

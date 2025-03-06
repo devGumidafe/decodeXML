@@ -281,7 +281,7 @@ const handleClearContent = (): void => {
 
 .app__input-column {
   flex: 1;
-  min-width: 0; /* Permite que las columnas se reduzcan correctamente */
+  min-width: 0;
 }
 
 /* Footer Styles */
@@ -385,7 +385,6 @@ const handleClearContent = (): void => {
   }
 }
 
-/* Animaciones */
 @keyframes fadeIn {
   from {
     opacity: 0;
